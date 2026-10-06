@@ -1,0 +1,8 @@
+{
+  "version": "r65",
+  "source_pdf": "tusnady-plane-stoc27-vC-r65.pdf",
+  "source_tex": "tusnady-plane-stoc27-vC-r65.tex",
+  "note": "Submission snapshot: original r65 manuscript files; main lower-bound formalization with explicitly documented proof-model differences.",
+  "tex_sha256": "2c3f3f16c67d38fc41a4c63c44d726896a38c6071717cd769a3f8f0920392460",
+  "sha256": "97182cf660d2a9ac660d8b01340af6fc2eddc891ee9e3cb49dc5a08a4c242943"
+}
