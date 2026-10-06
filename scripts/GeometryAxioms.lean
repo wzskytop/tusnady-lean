@@ -1,0 +1,16 @@
+import Oscillation.DriftAssembly
+import Oscillation.GeometryBounds
+import Oscillation.CoordinateProduct
+#print axioms Oscillation.gridPotential_refined_influence
+#print axioms Oscillation.gridMax_half_comparison
+#print axioms Oscillation.representativeKernel_interior
+#print axioms Oscillation.kernelWeights_variance
+#print axioms Oscillation.averaged_endpoint_baseline
+#print axioms Oscillation.half_averaged_rowDifference
+#print axioms Oscillation.rowDifference_abs_gain
+#print axioms Oscillation.gridMaxPotential_gain
+#print axioms Oscillation.gridPotential_drift_even
+#print axioms Oscillation.interiorMass_le_sqrt
+#print axioms Oscillation.splitCoordinates_measurePreserving
+#print axioms Oscillation.integral_point_eq_vertical_horizontal
+#print axioms Oscillation.ae_pointSampleLaw_mem_Ioc

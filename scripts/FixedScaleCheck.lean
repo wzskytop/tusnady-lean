@@ -1,0 +1,3 @@
+import Oscillation.FixedScale
+#print axioms Oscillation.pointCompensated_integral
+#print axioms Oscillation.fixed_scale_estimate

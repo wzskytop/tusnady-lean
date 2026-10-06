@@ -1,0 +1,7 @@
+import Oscillation.HistogramTransport
+#print axioms Oscillation.histogram_probability_le
+#print axioms Oscillation.histogram_card_le
+#print axioms Oscillation.iid_interior_laplace
+#print axioms Oscillation.integral_iid_buckets
+#print axioms Oscillation.integral_iid_interior_laplace
+#print axioms Oscillation.integral_iid_interior_laplace_of_measure

@@ -1,0 +1,6 @@
+import Oscillation.BucketGeometry
+#print axioms Oscillation.rectangularBucket_good_mass
+#print axioms Oscillation.rectangularBucket_bad_mass
+#print axioms Oscillation.rectangularBucket_iid_laplace
+#print axioms Oscillation.bucketSquareRootSum_eq_interiorMass
+#print axioms Oscillation.interiorMass_iid_laplace
