@@ -1,0 +1,47 @@
+name: Verify Lean proof
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    name: Build, axiom audit, and kernel replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      LEAN_NUM_THREADS: '2'
+    steps:
+      - name: Check out the exact commit
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Install Lean and fetch pinned dependency cache
+        uses: leanprover/lean-action@f061402b660e0c34644504b324e830f2991d4865 # v1
+        with:
+          auto-config: 'false'
+          build: 'false'
+          test: 'false'
+          lint: 'false'
+          use-mathlib-cache: 'true'
+          use-github-cache: 'false'
+      - name: Verify source, manuscript hashes, axioms, dependencies, and kernel
+        run: python3 scripts/verify.py --replay
+      - name: Produce checked submission snapshot
+        run: python3 scripts/package.py ../tusnady-r65-lean-verified.zip
+      - name: Preserve verification evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: verification-${{ github.sha }}
+          path: |
+            verification/*.log
+            verification/current-run.json
+            verification/source-sha256.json
+            verification/dependency-state.json
+          if-no-files-found: warn
+      - name: Preserve verified package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: tusnady-r65-verified-${{ github.sha }}
+          path: ../tusnady-r65-lean-verified.zip
+          if-no-files-found: error
