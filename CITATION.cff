@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "Please cite the paper and the exact repository commit or release used for verification."
+title: "Lean formalization of the main lower bound in Tight Bounds for Tusnády's Problem in the Plane"
+authors:
+  - family-names: Wei
+    given-names: Zhewei
+type: software
+version: r65-submission-v1
+repository-code: "https://github.com/wzskytop/tusnady-lean"
+license: MIT

@@ -1,0 +1,13 @@
+/.lake/
+.DS_Store
+**/__pycache__/
+*.olean
+*.ilean
+*.olean.private
+*.olean.server
+/verification/*.log
+/verification/current-run.json
+/verification/previous-run.json
+/verification/source-sha256.json
+/verification/dependency-state.json
+/verification/package-sha256.json
