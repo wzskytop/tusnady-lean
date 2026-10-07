@@ -9,7 +9,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 sources = {str(p.relative_to(ROOT).with_suffix('')).replace('/', '.'): p
-           for folder in ('Riesz', 'Oscillation') for p in (ROOT / folder).glob('*.lean')}
+           for folder in ('Riesz', 'Oscillation', 'R56Audit') for p in (ROOT / folder).glob('*.lean')}
 ordered, visiting, visited = [], set(), set()
 
 def visit(name):
@@ -31,7 +31,7 @@ for name in sorted(sources):
 log = ROOT / 'verification/build.log'
 log.parent.mkdir(exist_ok=True)
 with log.open('w') as out:
-    for name in ordered + ['Oscillation']:
+    for name in ordered + ['Oscillation', 'R56Audit']:
         result = subprocess.run(['lake', 'build', name], cwd=ROOT, text=True,
                                 stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out.write('TARGET ' + name + '\n' + result.stdout + '\n')

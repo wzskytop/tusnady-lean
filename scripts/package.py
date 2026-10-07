@@ -32,7 +32,7 @@ def read(name):
     return cache[name]
 
 run = parse(read('verification/current-run.json'))
-if run.get('schema_version') != 2 or run.get('passed') is not True:
+if run.get('schema_version') != 3 or run.get('passed') is not True:
     raise ValueError('A current successful r65 verification is required')
 expected_sources = {str(p.relative_to(ROOT)) for p in [
     *ROOT.glob('Riesz/*.lean'), *ROOT.glob('Oscillation/*.lean'), ROOT/'Oscillation.lean',
@@ -41,7 +41,8 @@ expected_sources = {str(p.relative_to(ROOT)) for p in [
     *ROOT.glob('scripts/*.py'), *ROOT.glob('*.sh'), ROOT/'.gitignore', ROOT/'AUDIT_R65.md', ROOT/'LICENSE', ROOT/'CITATION.cff',
     ROOT/'MANUSCRIPT_LICENSE.md', ROOT/'.github/workflows/verify.yml',
     LOGS/'manuscript-r65.json', LOGS/'tusnady-plane-stoc27-vC-r65.tex',
-    LOGS/'tusnady-plane-stoc27-vC-r65.pdf']}
+    LOGS/'tusnady-plane-stoc27-vC-r65.pdf', ROOT/'R56Audit.lean',
+    *ROOT.glob('R56Audit/*.lean'), *[p for p in (ROOT/'audit-claude').iterdir() if p.is_file()]]}
 manifest = parse(read('verification/source-sha256.json'))
 if set(manifest) != expected_sources:
     raise ValueError('Source file set changed; rerun verification')
@@ -49,7 +50,8 @@ for name, value in manifest.items():
     if digest(read(name)) != value:
         raise ValueError('Source changed: ' + name)
 records = {'lean-version.log', 'build.log', 'direct-dependencies.log', 'axioms.log',
-           'completion.log', 'replay.log', 'dependency-state.json', 'source-sha256.json'}
+           'completion.log', 'replay.log', 'dependency-state.json', 'source-sha256.json',
+           'supplement-audit.log', 'submission-statements.log', 'submission-closure.log'}
 if set(run.get('record_sha256', {})) != records:
     raise ValueError('Incomplete or extra verification record hashes')
 for name, value in run['record_sha256'].items():
@@ -62,7 +64,7 @@ for name, value in run['log_sha256'].items():
     if value != run['record_sha256'][name]:
         raise ValueError('Conflicting record hashes')
 modules = sorted(s[:-5].replace('/', '.') for s in expected_sources
-                 if s.endswith('.lean') and s.startswith(('Oscillation/', 'Riesz/')))
+                 if s.endswith('.lean') and s.startswith(('Oscillation/', 'Riesz/', 'R56Audit/')))
 replay = [parse(line) for line in read('verification/replay.log').decode().split('\n') if line]
 expected = [{'module': name, 'exit_code': 0} for name in modules]
 if run.get('replay_results') != expected or any(type(r.get('exit_code')) is not int for r in run['replay_results']):
@@ -73,12 +75,18 @@ for row, name in zip(replay, modules):
     if (set(row) != {'module','exit_code','output'} or row['module'] != name
             or type(row['exit_code']) is not int or row['exit_code'] != 0 or not isinstance(row['output'], str)):
         raise ValueError('Invalid replay entry: ' + name)
-for key, value in [('local_modules', len(modules)+1), ('completion_gates', 8)]:
+for key, value in [('local_modules', len(modules)+2), ('completion_gates', 8)]:
     if type(run.get(key)) is not int or run[key] != value:
         raise ValueError('Invalid count: ' + key)
 kernel = run.get('kernel_replay', {})
 if kernel.get('requested') is not True or type(kernel.get('passed_modules')) is not int or kernel['passed_modules'] != len(modules):
     raise ValueError('Full kernel replay is required')
+if run.get('independent_submission_gates') != 5 or run.get('primary_theorem') != 'R56Audit.theorem_1_1_unfolded':
+    raise ValueError('Missing submission statement checks')
+if run.get('supplement_audit') != {'passed':True,'modules':33,'constants':907,'statement_and_definition_examples':353,'rejected_mutants':52,'accepted_controls':3,'strict_errors':0,'strict_warnings':0}:
+    raise ValueError('Incomplete supplement audit')
+if not read('verification/supplement-audit.log').decode().rstrip().endswith('ALL CHECKS PASSED'):
+    raise ValueError('Supplement audit did not complete')
 meta = parse(read('verification/manuscript-r65.json'))
 if meta.get('version') != 'r65' or run['manuscript_sha256'] != meta['sha256'] or run['manuscript_tex_sha256'] != meta['tex_sha256']:
     raise ValueError('Wrong manuscript version')
