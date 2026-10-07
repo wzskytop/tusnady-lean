@@ -1,5 +1,5 @@
 name = "Oscillation"
-defaultTargets = ["Oscillation"]
+defaultTargets = ["Oscillation", "R56Audit"]
 
 [leanOptions]
 pp.unicode.fun = true
@@ -18,3 +18,6 @@ name = "Riesz"
 
 [[lean_lib]]
 name = "Oscillation"
+
+[[lean_lib]]
+name = "R56Audit"
