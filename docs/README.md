@@ -10,7 +10,7 @@ axis-parallel rectangles in the plane is Θ(log^{3/2} n).
 The guide starts from a coloring game and works up to the full proof. It has 22 short sections, 21 interactive
 figures and a few quizzes, and assumes only second-year undergraduate mathematics. The numbering of equations
 (1)–(18), Lemmas 2.1 and 2.3–2.6, Fact 2.2, Proposition 2.7 and Fact A.1 follows manuscript version r65 of the
-paper; that version has not been compared word for word with the version on arXiv.
+paper; the TeX source of arXiv v1 was checked on 2026-10-07 and is byte-for-byte identical to the repository’s r65 TeX source.
 
 ## Viewing
 
@@ -54,7 +54,7 @@ The pages embed the styles and math fonts of KaTeX 0.16.22 (MIT License); see
 - **English:** [`index.html`](index.html)
 
 导读从一个染色游戏讲起，一步一步推到完整的证明，共 22 节、21 个交互图和若干小测验，只假设大二水平的数学。式 (1)–(18)、引理 2.1 和
-2.3–2.6、Fact 2.2、命题 2.7、Fact A.1 的编号与论文 r65 版稿件一致；这一版没有与 arXiv 上的版本逐字比对。
+2.3–2.6、Fact 2.2、命题 2.7、Fact A.1 的编号与论文 r65 版稿件一致；2026-10-07 已核对，arXiv v1 的 TeX 源文件与仓库绑定的 r65 TeX 逐字节相同。
 
 ## 查看方式
 
