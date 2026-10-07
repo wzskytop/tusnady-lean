@@ -1,0 +1,1351 @@
+import R56Audit
+import Lean.Util.CollectAxioms
+
+/-!
+# Statement gates for the auditor's supplement (manuscript r65)
+
+Auditor's check script (not part of the audited archive, and not part of the supplement
+library). Run with
+
+    lake env lean -DautoImplicit=false -DwarningAsError=true audit-claude/Gates.lean
+
+The file is the reading list of the supplement: it contains, in the order of the manuscript,
+the definitions and the statements that correspond to the manuscript, and Lean checks each of
+them against the library.
+
+* A statement gate `example : (statement) = type_of% @T := rfl` fails unless the statement of
+  `T` in the library is the statement written here (up to unfolding of definitions). It pins
+  the statement in both directions: `T` proves neither more nor less. The statements are
+  copied from the sources by `audit-claude/mkgates.py`, from the list in
+  `audit-claude/Gates.template`, so that the two cannot drift apart; `check.sh` regenerates
+  the file and compares. `audit-claude/mutants.py` is the negative test: it changes one
+  hypothesis, constant or relation at a time and checks that the gate then fails.
+* A definition gate `example : X = (body) := rfl` (or `Iff.rfl`) does the same for a
+  definition, with the body written out by hand. (`oldWeight` and `childWeight` are given by
+  their values at the three positions, and `nextDigits` by its value as a natural number; the
+  inductive type `Side` and the archive's `freshGridIndex` are described by proved facts
+  instead.)
+
+Whether a statement written here says what the manuscript says is a matter of reading; the
+auditor's reading is recorded item by item in `AUDIT_CLAUDE.md`.
+
+The names in this file are read with the namespaces `R56Audit`, `Riesz`, `Riesz.PointSets`,
+`Oscillation`, `MeasureTheory` and `ProbabilityTheory` open. `SupplementAudit.lean` checks
+that no name of the supplement coincides with a name of the root namespace or of another open
+namespace, apart from a short list. Of that list this file uses only `maxOn` and `minOn`
+without their prefix (Lean's core library has other functions of these names): in the
+definition gates they are written `R56Audit.maxOn`, `R56Audit.minOn`, and in a statement gate
+a name read in the wrong way would make the `rfl` fail.
+
+The last part of the file checks the axioms of every declaration of the supplement; the
+route of the proof of Theorem 1.1: it goes through the statements of the manuscript, it uses
+none of a list of declarations of the archive's own proof, and what it uses of the archive
+lies in eight named modules; and the reading list: every definition of the supplement or of
+the archive that occurs in a statement gate (outside the last section, on the archive's own
+routes) has a definition gate.
+-/
+
+open MeasureTheory ProbabilityTheory Riesz Riesz.PointSets Oscillation R56Audit
+
+open scoped Classical
+
+-- The hypotheses of the statements below keep the names they have in the sources; the names
+-- are not referred to, so the unused-variable linter is switched off in this script.
+set_option linter.unusedVariables false
+
+-- Any other warning stops the script.
+set_option warningAsError true
+
+/-! ## Section 1. `F_χ`, `‖F_χ‖∞`, Theorem 1.1, Corollary 1.2 -/
+
+-- The law of `n` independent uniform points of `[0,1]²` (the archive's definition).
+--@def Riesz.PointSets.unifPts
+example (n : ℕ) : unifPts n =
+    Measure.pi fun _ : Fin n => (volume : Measure (ℝ × ℝ)).restrict (Set.Icc 0 1) := rfl
+
+-- `F_χ(x, y) = Σ_i χ_i 1{P_i ∈ [0,x] × [0,y]}`; a coloring is `χ : Fin n → ℤˣ = {±1}ⁿ`.
+--@def F
+example {n : ℕ} (χ : Fin n → ℤˣ) (P : Fin n → ℝ × ℝ) (x y : ℝ) :
+    F χ P x y =
+      ∑ i, if P i ∈ Set.Icc (0 : ℝ × ℝ) (x, y) then (((χ i : ℤˣ) : ℤ) : ℝ) else 0 := rfl
+
+--@pin F_eq_filter
+
+-- `‖F_χ‖∞`: the supremum of `|F_χ|` over `[0,1]²`. It is attained, so it is a maximum.
+--@def supNorm
+example {n : ℕ} (χ : Fin n → ℤˣ) (P : Fin n → ℝ × ℝ) :
+    supNorm χ P = ⨆ z : Set.Icc (0 : ℝ) 1 × Set.Icc (0 : ℝ) 1, |F χ P z.1 z.2| := rfl
+
+--@pin exists_eq_supNorm
+
+--@pin supNorm_le_iff
+
+--@pin measurable_supNorm
+
+-- The events of Theorem 1.1 and of Proposition 2.7 are measurable.
+--@pin measurableSet_forall_le_supNorm
+
+--@pin measurableSet_exists_supNorm_le
+
+-- **Theorem 1.1.**
+--@pin theorem_1_1
+
+-- The same statement without any definition of the supplement or of the archive.
+--@pin theorem_1_1_unfolded
+
+-- The constant: `c_A = b⁻⁸ / (1 + log₂ b)^{3/2}` for any integer `b` satisfying (15).
+--@def cA
+example (b : ℕ) : cA b = ((b : ℝ) ^ 8)⁻¹ / (1 + Real.logb 2 b) ^ (3 / 2 : ℝ) := rfl
+
+--@pin theorem_1_1_constant
+
+-- On a measurable event: distinct points of `[0,1]²`, strict inequality (as the proof gives).
+--@pin theorem_1_1_constant_event
+
+-- "there is an `n`-point set for which every coloring leaves an anchored rectangle with
+-- imbalance at least `c_A (log₂ n)^{3/2}`"
+--@pin exists_points
+
+-- **Corollary 1.2, lower bound.** `Δ₂(n)` is the archive's definition: the largest
+-- discrepancy of an `n`-point set with respect to closed axis-parallel rectangles.
+--@def Riesz.PointSets.Δ₂
+example (n : ℕ) : Δ₂ n = ⨆ X : {X : Finset (ℝ × ℝ) // X.card = n}, rectDisc X.1 := rfl
+
+--@def Riesz.PointSets.rectDisc
+example (X : Finset (ℝ × ℝ)) : rectDisc X =
+    ⨅ χ : X → ℤˣ, ⨆ ab : (ℝ × ℝ) × (ℝ × ℝ), (colorSum X χ (Set.Icc ab.1 ab.2)).natAbs := rfl
+
+--@def Riesz.PointSets.colorSum
+example (X : Finset (ℝ × ℝ)) (χ : X → ℤˣ) (R : Set (ℝ × ℝ)) :
+    colorSum X χ R = ∑ p : X, if (p : ℝ × ℝ) ∈ R then ((χ p : ℤˣ) : ℤ) else 0 := rfl
+
+--@pin corollary_1_2_lower
+
+-- "Anchored rectangles are a subfamily of all rectangles"
+--@pin lt_Δ₂_of_supNorm
+
+/-! ## Section 2.1. Setup -/
+
+-- The probability-one event: all heights are distinct, and no coordinate of a point has the
+-- form `k / b^r` with integers `k` and `r ≥ 0`.
+--@def SetupEvent
+example {n : ℕ} (b : ℕ) (P : Fin n → ℝ × ℝ) :
+    SetupEvent b P ↔ (Function.Injective fun i => (P i).2) ∧
+      ∀ i, ∀ (k : ℤ) (r : ℕ), (P i).1 ≠ (k : ℝ) / (b : ℝ) ^ r ∧ (P i).2 ≠ (k : ℝ) / (b : ℝ) ^ r :=
+  Iff.rfl
+
+--@def NoGrid
+example {n : ℕ} (b : ℕ) (P : Fin n → ℝ × ℝ) :
+    NoGrid b P ↔
+      ∀ i, ∀ (k : ℤ) (r : ℕ), (P i).1 ≠ (k : ℝ) / (b : ℝ) ^ r ∧ (P i).2 ≠ (k : ℝ) / (b : ℝ) ^ r :=
+  Iff.rfl
+
+--@pin ae_setupEvent
+
+--@pin ae_heights_injective
+
+--@pin ae_noGrid
+
+-- On that event the points lie in `(0,1]²` (indeed in `(0,1)²`).
+--@def InUnit
+example {n : ℕ} (P : Fin n → ℝ × ℝ) :
+    InUnit P ↔ ∀ i, (P i).1 ∈ Set.Ioc (0 : ℝ) 1 ∧ (P i).2 ∈ Set.Ioc (0 : ℝ) 1 := Iff.rfl
+
+--@pin inUnit_of_noGrid
+
+--@pin ae_inUnit
+
+/-! ### Endpoint average, display (2) -/
+
+-- `a^{(I)}(y) = (F(I⁻, y) + F(I⁺, y)) / 2`, for `I = [xm, xp]`.
+--@def endAvg
+example {n : ℕ} (χ : Fin n → ℤˣ) (P : Fin n → ℝ × ℝ) (xm xp y : ℝ) :
+    endAvg χ P xm xp y = (F χ P xm y + F χ P xp y) / 2 := rfl
+
+-- The position of a point relative to `I`, and its weight: `1` to the left of `I`, `1/2` in
+-- `I`, `0` to the right of `I`.
+--@def sideOf
+example (xm xp u : ℝ) :
+    sideOf xm xp u = if u ≤ xm then Side.left else if u ≤ xp then Side.inside else Side.right :=
+  rfl
+
+--@def Side Side.left Side.inside Side.right
+example (sd : Side) : sd = Side.left ∨ sd = Side.inside ∨ sd = Side.right := by
+  cases sd <;> simp
+
+example : Side.left ≠ Side.inside ∧ Side.left ≠ Side.right ∧ Side.inside ≠ Side.right := by
+  decide
+
+--@def oldWeight
+example : oldWeight Side.left = 1 ∧ oldWeight Side.inside = 1 / 2 ∧ oldWeight Side.right = 0 :=
+  ⟨rfl, rfl, rfl⟩
+
+--@def sgn
+example {n : ℕ} (χ : Fin n → ℤˣ) (i : Fin n) : sgn χ i = (((χ i : ℤˣ) : ℤ) : ℝ) := rfl
+
+-- `Σ_i c_i 1{V_i ≤ y}`, and the right-hand side of display (2), `Σ_i χ_i w_i 1{V_i ≤ y}`.
+--@def stepFn
+example {n : ℕ} (V c : Fin n → ℝ) (y : ℝ) : stepFn V c y = ∑ i, if V i ≤ y then c i else 0 := rfl
+
+--@def endpointAvg
+example {n : ℕ} (ε V : Fin n → ℝ) (side : Fin n → Side) (y : ℝ) :
+    endpointAvg ε V side y = ∑ i, if V i ≤ y then ε i * oldWeight (side i) else 0 := rfl
+
+-- Display (2).
+--@pin endpointAvg_eq_F
+
+/-! ### Oscillation and midpoint, display (3) -/
+
+-- (Lean's core library has other functions called `maxOn` and `minOn`. In this file the names
+-- stand for the two functions defined here.)
+--@def maxOn
+example {α : Type*} (B : Set α) (f : α → ℝ) : R56Audit.maxOn B f = sSup (f '' B) := rfl
+
+--@def minOn
+example {α : Type*} (B : Set α) (f : α → ℝ) : R56Audit.minOn B f = sInf (f '' B) := rfl
+
+--@def osc
+example {α : Type*} (B : Set α) (f : α → ℝ) : osc B f = sSup (f '' B) - sInf (f '' B) := rfl
+
+--@def mid
+example {α : Type*} (B : Set α) (f : α → ℝ) : mid B f = (sSup (f '' B) + sInf (f '' B)) / 2 := rfl
+
+-- "They take finitely many values, so these extrema exist, and they are
+-- `mid_B f ± ½ osc_B f`."
+--@pin maxOn_mem
+
+--@pin minOn_mem
+
+--@pin le_maxOn
+
+--@pin minOn_le
+
+--@pin maxOn_eq_mid_add
+
+--@pin minOn_eq_mid_sub
+
+--@pin stepFn_image_finite
+
+--@pin endAvg_image_finite
+
+-- "`osc_B(cf) = |c| osc_B f`"; shift invariance; the triangle inequality, for two functions
+-- and for finite sums; the reverse triangle inequality.
+--@pin osc_const_mul
+
+--@pin osc_add_const
+
+--@pin mid_add_const
+
+-- "because the maximum of `f+g` on `B` is at most `max_B f + max_B g`, and its minimum is at
+-- least `min_B f + min_B g`"
+--@pin maxOn_add_le
+
+--@pin add_minOn_le
+
+--@pin osc_add_le
+
+--@pin osc_sum_le
+
+-- "using `osc_B(-g) = osc_B g` gives `osc_B f ≤ osc_B(f+g) + osc_B g`"
+--@pin osc_neg
+
+--@pin osc_le_osc_add_add
+
+--@pin abs_osc_add_sub_le
+
+/-! ## Section 2.2. A deterministic comparison -/
+
+-- The blocks `B_1, …, B_b` of `J = [s, s + bL)`: `B_{ℓ+1} = [s + ℓL, s + (ℓ+1)L)`.
+--@def block
+example (s L : ℝ) (ℓ : ℕ) : block s L ℓ = Set.Ico (s + ℓ * L) (s + (ℓ + 1) * L) := rfl
+
+--@pin iUnion_block
+
+--@pin block_disjoint
+
+-- `B_2 ∪ ⋯ ∪ B_{b-1}`, the heights of the inner region; "it is not empty because `b ≥ 3`".
+--@pin iUnion_inner_blocks
+
+--@pin inner_blocks_nonempty
+
+-- **Lemma 2.1**, display (4).
+--@pin vertical_comparison
+
+-- Its proof: the first display (each line is these two statements, the second line with the
+-- two blocks exchanged); "Taking the larger of the two right-hand sides"; "Also
+-- `osc_J f ≥ osc_{B_ℓ} f`". The lemma is proved for arbitrary nonempty subsets of `J`.
+--@pin maxOn_sub_minOn_le_osc
+
+--@pin maxOn_sub_minOn_eq
+
+--@pin half_osc_add_abs_mid_sub_le
+
+--@pin osc_mono
+
+--@pin vertical_comparison_sets
+
+/-! ## Section 2.3. Horizontal refinement and the random gain -/
+
+-- The local experiment: colors `ε`, heights `V` and positions `side` relative to `I` are
+-- fixed; `r i` is the child of the point `i` (used only for points in `I`), and the
+-- expectation is the average over all `r : Fin n → Fin b`.
+--@def Oscillation.finAvg
+example {α : Type*} [Fintype α] (f : α → ℝ) : finAvg f = (∑ x, f x) / Fintype.card α := rfl
+
+-- The weight of a point in the child `C_{k+1}`, given its position relative to `I` and its
+-- own child `C_{r+1}`; the child function `a_k`.
+--@def childWeight
+example {b : ℕ} (r k : Fin b) :
+    childWeight Side.left r k = 1 ∧ childWeight Side.right r k = 0 ∧
+      childWeight Side.inside r k = (if r < k then 1 else if r = k then 1 / 2 else 0) :=
+  ⟨rfl, rfl, rfl⟩
+
+--@def childAvg
+example {n b : ℕ} (ε V : Fin n → ℝ) (side : Fin n → Side) (r : Fin n → Fin b) (k : Fin b)
+    (y : ℝ) :
+    childAvg ε V side r k y =
+      ∑ i, if V i ≤ y then ε i * childWeight (side i) (r i) k else 0 := rfl
+
+-- The child functions are the endpoint averages of the children of `I`.
+--@pin exists_childIndex
+
+--@pin childAvg_eq_F
+
+-- `m_R`: the number of points in the inner region.
+--@def innerPoints
+example {n : ℕ} (b : ℕ) (V : Fin n → ℝ) (side : Fin n → Side) (s L : ℝ) :
+    innerPoints b V side s L = Finset.univ.filter
+      (fun i => side i = Side.inside ∧ s + L ≤ V i ∧ V i < s + ((b : ℝ) - 1) * L) := rfl
+
+--@pin mem_innerPoints_iff
+
+-- **Fact 2.2.**
+--@pin fact_2_2_general
+
+-- The instance used in Lemma 2.3: independent uniform digits; "symmetric" is witnessed by a
+-- permutation of the digits.
+--@pin fact_2_2_uniform
+
+--@pin exists_symm_perm_iff
+
+-- The form in which the proof of Lemma 2.3 uses it: the shift `θ` may depend on the digits of
+-- the other points ("condition on the children of all other points").
+--@def jumpSum
+example {n : ℕ} {D : Type*} [Fintype D] (S : Finset (Fin n)) (x : Fin n → D → ℝ)
+    (r : Fin n → D) : jumpSum S x r = ∑ i ∈ S, x i (r i) := rfl
+
+--@pin symmetric_sum_abs
+
+-- **Lemma 2.3.**
+--@pin local_gain
+
+-- Its proof. Step 1: `ā`, display (5).
+--@def childMean
+example {n b : ℕ} (ε V : Fin n → ℝ) (side : Fin n → Side) (r : Fin n → Fin b) (y : ℝ) :
+    childMean ε V side r y = (∑ k : Fin b, childAvg ε V side r k y) / b := rfl
+
+--@pin card_mul_osc_avg_le
+
+--@pin display_5
+
+--@pin avg_comparison_core
+
+-- Step 2: the jump `X_i = χ_i (b + 1 - 2r) / (2b)` for the child `C_r`, `r = d + 1`;
+-- displays (6) and (7).
+--@def jump
+example {n : ℕ} (b : ℕ) (ε : Fin n → ℝ) (i : Fin n) (d : Fin b) :
+    jump b ε i d = ε i * (((b : ℝ) - 1 - 2 * (d : ℕ)) / (2 * b)) := rfl
+
+--@pin sum_childWeight
+
+--@pin display_6
+
+--@pin childMean_eq
+
+--@pin jump_rev
+
+--@pin finAvg_jump
+
+--@pin finAvg_childMean
+
+-- Step 3: "The expectation of a maximum is at least the maximum of the expectations, and the
+-- expectation of a minimum is at most the minimum of the expectations"; display (8).
+--@pin maxOn_endpointAvg_le
+
+--@pin finAvg_minOn_childMean_le
+
+--@pin osc_endpointAvg_le
+
+--@pin display_8
+
+--@pin expected_comparison_core
+
+-- Step 4: `D`, `g`, `θ`.
+--@def withoutJumps
+example {n : ℕ} (b : ℕ) (ε V : Fin n → ℝ) (side : Fin n → Side) (S : Finset (Fin n))
+    (r : Fin n → Fin b) (y : ℝ) :
+    withoutJumps b ε V side S r y =
+      ∑ i, if V i ≤ y then ε i * oldWeight (side i) +
+        (if side i = Side.inside ∧ i ∉ S then jump b ε i (r i) else 0) else 0 := rfl
+
+--@pin withoutJumps_eq
+
+--@pin innerPoints_between_blocks
+
+--@pin offset_eq
+
+--@pin offset_core
+
+-- The moments of the jumps: "`X_i² = (r - (b+1)/2)²/b²` \[…\] `r` has mean `(b+1)/2` and
+-- second moment `(b+1)(2b+1)/6`, so its variance is \[…\] `(b²-1)/12`. Also
+-- `|X_i| ≤ (b-1)/(2b)`. Hence `E X_i² = (b²-1)/(12b²)`", and the chain for `E X_i⁴`.
+--@pin jump_sq_eq
+
+--@pin finAvg_childIndex
+
+--@pin finAvg_childIndex_sq
+
+--@pin finAvg_childIndex_var
+
+--@pin abs_jump_le
+
+--@pin finAvg_jump_sq
+
+--@pin finAvg_jump_fourth_le_sq
+
+--@pin sq_mul_sigma_sq_le
+
+--@pin finAvg_jump_fourth_le
+
+-- The last display: `E|…| ≥ σ√(m_R/3) = (√(b²-1)/(6b)) √(m_R) ≥ √(m_R)/8`.
+--@pin expected_offset_ge_sigma
+
+--@pin expected_offset_core_sigma
+
+--@pin sigma_mul_sqrt_eq
+
+--@pin sqrt_sq_sub_one_div_ge
+
+--@pin sqrt_div_eight_le
+
+--@pin expected_offset_ge
+
+--@pin expected_offset_core
+
+-- Lemma 2.3 for arbitrary sets of heights in place of the blocks.
+--@pin local_gain_core
+
+--@pin local_gain_sets
+
+-- **What one rectangle gives**: `E‖F‖∞ ≥ √(m_R)/(8b)` when the heights are fixed.
+--@def heightSigma
+example (n : ℕ) : heightSigma n =
+    MeasurableSpace.comap (fun (P : Fin n → ℝ × ℝ) (i : Fin n) => (P i).2) inferInstance := rfl
+
+--@def unitInnerRegion
+example (b : ℕ) :
+    unitInnerRegion b = Set.Icc (0 : ℝ) 1 ×ˢ Set.Ico (1 / (b : ℝ)) (1 - 1 / (b : ℝ)) := rfl
+
+--@def unitInnerCount
+example {n : ℕ} (b : ℕ) (P : Fin n → ℝ × ℝ) :
+    unitInnerCount b P = (Finset.univ.filter (fun i => P i ∈ unitInnerRegion b)).card := rfl
+
+--@pin one_rectangle
+
+/-! ## Section 2.4. All scales -/
+
+/-! ### Partitions and potential, displays (1) and (9) -/
+
+-- Stage `j`: horizontal intervals `[c/b^j, (c+1)/b^j]`, vertical intervals
+-- `[v b^{j-h}, (v+1) b^{j-h})`, and their products, the cells.
+--@def hcell
+example (b j c : ℕ) :
+    hcell b j c = Set.Icc ((c : ℝ) / (b : ℝ) ^ j) (((c : ℝ) + 1) / (b : ℝ) ^ j) := rfl
+
+--@def vlen
+example (b h j : ℕ) : vlen b h j = (b : ℝ) ^ j / (b : ℝ) ^ h := rfl
+
+--@def vcell
+example (b h j v : ℕ) :
+    vcell b h j v = Set.Ico (v * ((b : ℝ) ^ j / (b : ℝ) ^ h)) ((v + 1) * ((b : ℝ) ^ j / (b : ℝ) ^ h)) :=
+  rfl
+
+--@def cell
+example (b h j c v : ℕ) : cell b h j c v = hcell b j c ×ˢ vcell b h j v := rfl
+
+--@pin iUnion_hcell
+
+--@pin iUnion_vcell
+
+--@pin vcell_disjoint
+
+--@pin iUnion_cell
+
+--@pin card_cells_stage
+
+--@pin volume_cell
+
+-- The potential, display (1).
+--@def Zpot
+example {n : ℕ} (χ : Fin n → ℤˣ) (b h j : ℕ) (P : Fin n → ℝ × ℝ) :
+    Zpot χ b h j P =
+      (∑ c : Fin (b ^ j), ∑ v : Fin (b ^ (h - j)),
+        osc (vcell b h j v)
+          (endAvg χ P (((c : ℕ) : ℝ) / (b : ℝ) ^ j) ((((c : ℕ) : ℝ) + 1) / (b : ℝ) ^ j))) /
+        (b : ℝ) ^ h := rfl
+
+-- Display (9).
+--@pin Zpot_nonneg
+
+--@pin Zpot_le_two_supNorm
+
+--@pin measurable_Zpot
+
+/-! ### The σ-fields `𝓕_j` and the next digits -/
+
+-- The `k`-th base-`b` digit of `u` (after the point), and `𝓕_j`: "the σ-field generated by
+-- all heights and by the first `j` base-`b` digits of every horizontal coordinate".
+--@def digit
+example (b k : ℕ) (u : ℝ) : digit b k u = ⌊(b : ℝ) ^ k * u⌋₊ % b := rfl
+
+--@def digitInfo
+example (n b j : ℕ) (P : Fin n → ℝ × ℝ) :
+    digitInfo n b j P = (fun i => (P i).2, fun i (k : Fin j) => digit b ((k : ℕ) + 1) (P i).1) :=
+  rfl
+
+--@def digitSigma
+example (n b j : ℕ) : digitSigma n b j = MeasurableSpace.comap (digitInfo n b j) inferInstance :=
+  rfl
+
+--@pin measurable_digitInfo
+
+-- The σ-field used in the proofs: generated by all heights and by the index `c` of the
+-- stage-`j` interval `(c/b^j, (c+1)/b^j]` that contains each horizontal coordinate.
+--@def Riesz.gridIndex
+example (k : ℕ) (u : ℝ) : gridIndex k u = ⌈(k : ℝ) * u⌉ - 1 := rfl
+
+--@def coarseInfo
+example (n k : ℕ) (P : Fin n → ℝ × ℝ) :
+    coarseInfo n k P = (fun i => (P i).2, fun i => gridIndex k (P i).1) := rfl
+
+--@def stageSigma
+example (n b j : ℕ) :
+    stageSigma n b j = MeasurableSpace.comap (coarseInfo n (b ^ j)) inferInstance := rfl
+
+--@pin stageSigma_le
+
+--@pin stageSigma_succ_le
+
+-- "The first `j` digits of `U_i` determine the stage-`j` horizontal interval that contains
+-- `U_i`", and conversely; hence conditional expectations given the two σ-fields agree.
+--@def idxOfDigits
+example (b j : ℕ) (d : Fin j → ℕ) :
+    idxOfDigits b j d = ∑ k : Fin j, (b : ℤ) ^ (j - ((k : ℕ) + 1)) * (d k : ℤ) := rfl
+
+--@def digitsOfIdx
+example (b j : ℕ) (g : ℤ) (k : Fin j) :
+    digitsOfIdx b j g k = ((g / (b : ℤ) ^ (j - ((k : ℕ) + 1))) % (b : ℤ)).toNat := rfl
+
+--@def coarseOfDigits
+example (n b j : ℕ) (p : (Fin n → ℝ) × (Fin n → Fin j → ℕ)) :
+    coarseOfDigits n b j p = (p.1, fun i => idxOfDigits b j (p.2 i)) := rfl
+
+--@def digitsOfCoarse
+example (n b j : ℕ) (p : (Fin n → ℝ) × (Fin n → ℤ)) :
+    digitsOfCoarse n b j p = (p.1, fun i => digitsOfIdx b j (p.2 i)) := rfl
+
+--@pin gridIndex_eq_idxOfDigits
+
+--@pin coarseInfo_ae_eq_digitInfo
+
+--@pin digitInfo_ae_eq_coarseInfo
+
+--@pin condExp_digitSigma
+
+-- "So `Z_j` is `𝓕_j`-measurable."
+--@pin Zpot_aestronglyMeasurable_digits
+
+--@pin Zpot_aestronglyMeasurable
+
+-- "The `(j+1)`-st digits \[…\] are independent and uniform conditional on `𝓕_j`."
+--@def nextDigits
+example {b : ℕ} (hb : 0 < b) (n j : ℕ) (P : Fin n → ℝ × ℝ) (i : Fin n) :
+    ((nextDigits hb n j P i : Fin b) : ℕ) = digit b (j + 1) (P i).1 := rfl
+
+--@pin measurable_nextDigits
+
+--@pin condExp_nextDigits
+
+-- The form used in the proofs: the next digit is the archive's `freshGridIndex`, the position
+-- of the stage-`(j+1)` interval inside the stage-`j` interval; it is the `(j+1)`-st digit off
+-- the grid lines. The conditional law is the archive's `Riesz.condExp_freshGrid_with_past`.
+--@def Riesz.freshGridIndex
+example (k m : ℕ) (hm : 0 < m) (u : ℝ) :
+    ((freshGridIndex k m hm u : ℕ) : ℤ) = gridIndex (k * m) u % (m : ℤ) := by
+  -- for `k > 0` this is the archive's `freshGridIndex_eq_emod`; for `k = 0` both sides are `m - 1`
+  rcases Nat.eq_zero_or_pos k with rfl | hk
+  · have h1 : (1 : ℝ) ∈ Set.Ioc (0 : ℝ) 1 := ⟨one_pos, le_rfl⟩
+    have h0 : ((0 : ℕ) : ℝ) * u - ((gridIndex 0 u : ℤ) : ℝ) = 1 := by simp [gridIndex]
+    have hg : gridIndex m 1 = (m : ℤ) - 1 := by simp [gridIndex]
+    have hr : gridIndex (0 * m) u % (m : ℤ) = (m : ℤ) - 1 := by
+      have e : gridIndex (0 * m) u = -1 := by simp [gridIndex]
+      rw [e, ← Int.add_emod_right (-1) (m : ℤ)]
+      exact Int.emod_eq_of_lt (by omega) (by omega)
+    rw [hr]
+    unfold freshGridIndex
+    rw [h0]
+    unfold Riesz.Occupancy.finiteGridIndex
+    rw [dite_eq_left_of_eq_true (eq_true h1)]
+    simp only [hg]
+    omega
+  · exact freshGridIndex_eq_emod k m hk hm u
+
+--@def freshInfo
+example (n k m : ℕ) (hm : 0 < m) (P : Fin n → ℝ × ℝ) (i : Fin n) :
+    freshInfo n k m hm P i = freshGridIndex k m hm (P i).1 := rfl
+
+--@pin fresh_eq_digit
+
+--@pin nextDigits_ae_eq_freshInfo
+
+-- Some statements that are used inside the proofs are written for the law of the points with
+-- the two coordinates separated, the archive's `pointSampleLaw`. It is the law `unifPts`.
+--@def Riesz.PointSets.μI
+example : μI = (volume : Measure ℝ).restrict (Set.Icc 0 1) := rfl
+
+--@def Oscillation.pointSampleLaw
+example (n : ℕ) : pointSampleLaw n = Measure.pi fun _ : Fin n => μI.prod μI := rfl
+
+example (n : ℕ) : pointSampleLaw n = unifPts n := pointSampleLaw_eq_unifPts n
+
+--@pin condExp_fresh_given_heights
+
+--@pin iIndepFun_fresh
+
+--@pin indepFun_coarse_fresh
+
+/-! ### The plan, display (10) -/
+
+-- The fluctuation term `T`, with `𝓕_j` generated by digits and by interval indices.
+--@def fluctDigits
+example {n : ℕ} (χ : Fin n → ℤˣ) (b h : ℕ) (P : Fin n → ℝ × ℝ) :
+    fluctDigits χ b h P = ∑ j ∈ Finset.range h,
+      (Zpot χ b h (j + 1) P - ((unifPts n)[Zpot χ b h (j + 1) | digitSigma n b j]) P) := rfl
+
+--@def fluct
+example {n : ℕ} (χ : Fin n → ℤˣ) (b h : ℕ) (P : Fin n → ℝ × ℝ) :
+    fluct χ b h P = ∑ j ∈ Finset.range h,
+      (Zpot χ b h (j + 1) P - ((unifPts n)[Zpot χ b h (j + 1) | stageSigma n b j]) P) := rfl
+
+--@pin fluctDigits_ae_eq
+
+--@pin measurableSet_fluctDigits_le
+
+--@pin measurableSet_fluct_le
+
+-- Display (10).
+--@pin roadmap_digits
+
+--@pin roadmap
+
+/-! ### Transitions, comparison rectangles, Lemma 2.4 -/
+
+-- The comparison rectangle of the transition `j → j+1` with indices `(c, v)`: one old
+-- horizontal interval times one new vertical interval.
+--@def compRect
+example (b h j c v : ℕ) : compRect b h j c v = hcell b j c ×ˢ vcell b h (j + 1) v := rfl
+
+--@pin hcell_eq_iUnion_children
+
+--@pin vcell_succ_eq_iUnion
+
+--@pin compRect_eq_iUnion_old
+
+--@pin compRect_eq_iUnion_new
+
+--@pin card_compRect
+
+--@pin volume_compRect
+
+-- The inner region: the comparison rectangle without its bottom and top old cells.
+--@def innerRegion
+example (b h j c v : ℕ) :
+    innerRegion b h j c v =
+      Set.Icc ((c : ℝ) / (b : ℝ) ^ j) (((c : ℝ) + 1) / (b : ℝ) ^ j) ×ˢ
+        Set.Ico (((v : ℝ) * (b : ℝ) ^ (j + 1) + (b : ℝ) ^ j) / (b : ℝ) ^ h)
+          ((((v : ℝ) + 1) * (b : ℝ) ^ (j + 1) - (b : ℝ) ^ j) / (b : ℝ) ^ h) := rfl
+
+--@pin innerRegion_eq_diff
+
+--@pin innerRegion_eq_iUnion
+
+-- `m_R` and `δ_j`.
+--@def innerCount
+example {n : ℕ} (b h j : ℕ) (P : Fin n → ℝ × ℝ) (c v : ℕ) :
+    innerCount b h j P c v = (Finset.univ.filter (fun i => P i ∈ innerRegion b h j c v)).card :=
+  rfl
+
+--@def delta
+example {n : ℕ} (b h j : ℕ) (P : Fin n → ℝ × ℝ) :
+    delta b h j P =
+      (∑ c : Fin (b ^ j), ∑ v : Fin (b ^ (h - j - 1)), Real.sqrt (innerCount b h j P c v)) /
+        (4 * (b : ℝ) * (b : ℝ) ^ (h - 1)) := rfl
+
+-- **Lemma 2.4**, display (11).
+--@pin lemma_2_4_digits
+
+--@pin lemma_2_4
+
+-- Its proof works with the potential as a function of the heights `V` and of the interval
+-- indices `g`, and with `δ_j` as a function of them; refining the indices by the next digits
+-- `r` gives the next stage.
+--@def Zstep
+example {n : ℕ} (ε : Fin n → ℝ) (b h j : ℕ) (V : Fin n → ℝ) (g : Fin n → ℤ) :
+    Zstep ε b h j V g =
+      (∑ c : Fin (b ^ j), ∑ v : Fin (b ^ (h - j)),
+        osc (vcell b h j v) (endpointAvg ε V (fun i => sideIdx (g i) c))) / (b : ℝ) ^ h := rfl
+
+--@def sideIdx
+example (g : ℤ) (c : ℕ) :
+    sideIdx g c = if g < c then Side.left else if g = c then Side.inside else Side.right := rfl
+
+--@def refineIdx
+example {n b : ℕ} (g : Fin n → ℤ) (r : Fin n → Fin b) (i : Fin n) :
+    refineIdx g r i = (b : ℤ) * g i + ((r i : ℕ) : ℤ) := rfl
+
+--@def innerSet
+example {n : ℕ} (b h j : ℕ) (V : Fin n → ℝ) (g : Fin n → ℤ) (c v : ℕ) :
+    innerSet b h j V g c v =
+      innerPoints b V (fun i => sideIdx (g i) c) ((v : ℝ) * vlen b h (j + 1)) (vlen b h j) := rfl
+
+--@def deltaStep
+example {n : ℕ} (b h j : ℕ) (V : Fin n → ℝ) (g : Fin n → ℤ) :
+    deltaStep b h j V g =
+      (∑ c : Fin (b ^ j), ∑ v : Fin (b ^ (h - j - 1)),
+        Real.sqrt ((innerSet b h j V g c v).card)) / (4 * (b : ℝ) * (b : ℝ) ^ (h - 1)) := rfl
+
+--@pin Zpot_eq_Zstep
+
+--@pin gridIndex_succ
+
+--@pin innerCount_eq_card_innerSet
+
+--@pin delta_eq_deltaStep
+
+-- "Every old cell is a horizontal strip of exactly one comparison rectangle `R = I × J`, and
+-- every new cell is a vertical strip of exactly one. So \[…\]
+-- `bM (Z_{j+1} - Z_j) = Σ_R (Σ_k osc_J a^{(C_k)} - Σ_ℓ osc_{B_ℓ} a^{(I)})`": the two sums.
+--@pin Zstep_eq_sum_blocks
+
+--@pin Zstep_succ_eq_sum_children
+
+-- "So Lemma 2.3 bounds the conditional expectation of each term, and dividing by `bM` gives
+-- (11)", with the conditional expectation written as the average over the next digits.
+--@pin Zstep_gain
+
+--@def Zproc
+example {n : ℕ} (ε : Fin n → ℝ) (b h j : ℕ) (P : Fin n → ℝ × ℝ) :
+    Zproc ε b h j P =
+      Zstep ε b h (min j h) (coarseInfo n (b ^ min j h) P).1 (coarseInfo n (b ^ min j h) P).2 :=
+  rfl
+
+--@def Zmean
+example {n : ℕ} (ε : Fin n → ℝ) (b h j : ℕ) (P : Fin n → ℝ × ℝ) :
+    Zmean ε b h j P = finAvg (fun r : Fin n → Fin b =>
+      Zstep ε b h (j + 1) (coarseInfo n (b ^ j) P).1 (refineIdx (coarseInfo n (b ^ j) P).2 r)) :=
+  rfl
+
+--@pin Zpot_ae_eq_Zproc
+
+--@pin condExp_Zproc_succ
+
+--@pin condExp_gain
+
+/-! ### Good transitions, Lemma 2.5 -/
+
+--@def Heavy
+example {n : ℕ} (b h j : ℕ) (P : Fin n → ℝ × ℝ) (c v : ℕ) :
+    Heavy b h j P c v ↔ (b : ℝ) * n / (b : ℝ) ^ (h - 1) < innerCount b h j P c v := Iff.rfl
+
+--@def GoodTransition
+example {n : ℕ} (b h j : ℕ) (P : Fin n → ℝ × ℝ) :
+    GoodTransition b h j P ↔
+      (n : ℝ) / 2 ≤ (Finset.univ.filter (fun i => ∃ c : Fin (b ^ j), ∃ v : Fin (b ^ (h - j - 1)),
+        P i ∈ innerRegion b h j c v ∧ ¬ Heavy b h j P c v)).card := Iff.rfl
+
+--@pin measurableSet_goodTransition
+
+-- Display (12).
+--@def deltaStar
+example (n b h : ℕ) :
+    deltaStar n b h = 1 / (8 * (b : ℝ) ^ (3 / 2 : ℝ)) * Real.sqrt (n / (b : ℝ) ^ (h - 1)) := rfl
+
+-- **Lemma 2.5 (i).**
+--@pin lemma_2_5_i
+
+-- **Lemma 2.5 (ii).**
+--@pin lemma_2_5_ii
+
+--@pin lemma_2_5_ii_all
+
+-- Its proof: boundary strips, `W_𝒮`, `E_𝒮`.
+--@def bottomStrip
+example (b h j c v : ℕ) :
+    bottomStrip b h j c v =
+      Set.Icc ((c : ℝ) / (b : ℝ) ^ j) (((c : ℝ) + 1) / (b : ℝ) ^ j) ×ˢ
+        Set.Ico ((v : ℝ) * (b : ℝ) ^ (j + 1) / (b : ℝ) ^ h)
+          (((v : ℝ) * (b : ℝ) ^ (j + 1) + (b : ℝ) ^ j) / (b : ℝ) ^ h) := rfl
+
+--@def topStrip
+example (b h j c v : ℕ) :
+    topStrip b h j c v =
+      Set.Icc ((c : ℝ) / (b : ℝ) ^ j) (((c : ℝ) + 1) / (b : ℝ) ^ j) ×ˢ
+        Set.Ico ((((v : ℝ) + 1) * (b : ℝ) ^ (j + 1) - (b : ℝ) ^ j) / (b : ℝ) ^ h)
+          (((v : ℝ) + 1) * (b : ℝ) ^ (j + 1) / (b : ℝ) ^ h) := rfl
+
+--@pin bottomStrip_eq_cell
+
+--@pin topStrip_eq_cell
+
+--@def boundaryStrips
+example (b h j : ℕ) :
+    boundaryStrips b h j = ⋃ p : Fin (b ^ j) × Fin (b ^ (h - j - 1)),
+      bottomStrip b h j p.1 p.2 ∪ topStrip b h j p.1 p.2 := rfl
+
+--@def Wset
+example (b h j : ℕ) (𝒮 : Finset (Fin (b ^ j) × Fin (b ^ (h - j - 1)))) :
+    Wset b h j 𝒮 = boundaryStrips b h j ∪ ⋃ p ∈ 𝒮, innerRegion b h j p.1 p.2 := rfl
+
+--@def heavySet
+example {n : ℕ} (b h j : ℕ) (P : Fin n → ℝ × ℝ) :
+    heavySet b h j P = Finset.univ.filter (fun p => Heavy b h j P p.1 p.2) := rfl
+
+--@def crowdEvent
+example {n : ℕ} (b h j : ℕ) (𝒮 : Finset (Fin (b ^ j) × Fin (b ^ (h - j - 1)))) :
+    (crowdEvent b h j 𝒮 : Set (Fin n → ℝ × ℝ)) =
+      {P | (n : ℝ) / 2 ≤ (Finset.univ.filter (fun i => P i ∈ Wset b h j 𝒮)).card} := rfl
+
+--@def smallCollections
+example (b h j : ℕ) :
+    smallCollections b h j =
+      Finset.univ.filter (fun 𝒮 : Finset (Fin (b ^ j) × Fin (b ^ (h - j - 1))) =>
+        (𝒮.card : ℝ) < (b : ℝ) ^ (h - 1) / b) := rfl
+
+--@pin mem_boundaryStrips_or_innerRegion
+
+--@pin half_lt_card_Wset
+
+--@pin innerRegion_inj
+
+--@pin card_heavySet_lt
+
+--@pin mem_crowdEvent_heavySet
+
+--@pin bad_ae_le_iUnion_crowdEvent
+
+-- "so they cover an area of `2/b`"; "area less than `1/M` each, so they cover an area of less
+-- than `1/b`"; "Hence `W_𝒮` is a fixed set of area at most `3/b`".
+--@pin volume_boundaryStrips
+
+--@pin volume_boundaryStrips_le
+
+--@pin volume_innerRegion_lt
+
+--@pin volume_innerRegions_lt
+
+--@pin volume_innerRegions_le
+
+--@pin volume_Wset_le
+
+--@pin exists_card_eq_ceil_half
+
+--@pin unifPts_forall_mem
+
+--@pin unifPts_forall_mem_le
+
+--@pin unifPts_half_mem_le
+
+--@pin unifPts_crowdEvent_le
+
+--@pin card_smallCollections_le
+
+--@pin unifPts_bad_le
+
+--@pin two_pow_mul_rpow_le
+
+/-! ### Fluctuations, Lemma 2.6 -/
+
+-- **Lemma 2.6**, display (13).
+--@pin lemma_2_6_digits
+
+--@pin lemma_2_6
+
+-- Its proof. Step 1: one digit. "If `V_i ∉ B`, the added function is constant on `B` \[…\]
+-- If `V_i ∈ B`, the added function has oscillation at most `1` on `B`"; one cell; all cells.
+--@pin stepFn_single_eq_of_notMem
+
+--@pin osc_stepFn_single_le
+
+--@pin abs_osc_endpointAvg_sub_le
+
+--@pin Zstep_update_le
+
+-- Step 2: one transition, by Fact A.1. In the proof `Z_{j+1}` is read from the heights and
+-- the indices (`Zproc`) and `E[Z_{j+1} | 𝓕_j]` is the average over the next digits (`Zmean`).
+--@def fluctStep
+example {n : ℕ} (ε : Fin n → ℝ) (b h : ℕ) (P : Fin n → ℝ × ℝ) :
+    fluctStep ε b h P = ∑ j ∈ Finset.range h, (Zproc ε b h (j + 1) P - Zmean ε b h j P) := rfl
+
+--@pin condExp_exp_step
+
+--@pin fluctTerm_ae_eq
+
+--@pin lemma_2_6_step2
+
+-- Step 3: all transitions. "the earlier terms `T_0, …, T_{j-1}` are `𝓕_j`-measurable. So we
+-- can condition successively \[…\] Multiplying the `h` bounds gives \[…\] By Markov's
+-- inequality".
+--@pin fluctTerm_measurable_of_lt
+
+--@pin integral_prod_le_of_condExp_le
+
+--@pin integral_exp_neg_sum_le
+
+--@pin fluct_ae_eq
+
+--@pin lemma_2_6_step3
+
+--@pin measureReal_le_exp_mul_integral_exp_neg
+
+--@pin lemma_2_6_markov
+
+/-! ### Proposition 2.7 -/
+
+-- Its proof, sentence by sentence, with `𝓕_j = digitSigma` and `T = fluctDigits`.
+--@pin condGain_ge_deltaStar
+
+--@pin Zpot_ge_of_good
+
+--@pin Zpot_le_of_small
+
+--@pin fluct_le_of_good
+
+--@pin deltaStar_sq
+
+--@pin exponent_eq
+
+--@pin good_inter_small_le
+
+--@pin prob_exists_small_le
+
+--@pin threshold_eq
+
+--@pin card_colorings
+
+-- **Proposition 2.7**, display (14).
+--@pin proposition_2_7
+
+/-! ## Section 2.5. Parameters -/
+
+-- Display (15) can be satisfied; "it forces `b > 48`, so that `64 ≤ b⁴`".
+--@pin exists_base_of_15
+
+--@pin base_ge_49
+
+--@pin sixty_four_le_pow_four
+
+--@pin cA_pos
+
+-- "Let `h ≥ 1` be the largest integer with `b⁻⁵ h b^{h-1} ≤ n`"
+--@def ScaleOK
+example (b n h : ℕ) : ScaleOK b n h ↔ (h : ℝ) * (b : ℝ) ^ (h - 1) / (b : ℝ) ^ 5 ≤ n := Iff.rfl
+
+--@def IsScale
+example (b n h : ℕ) :
+    IsScale b n h ↔ 1 ≤ h ∧ (h : ℝ) * (b : ℝ) ^ (h - 1) / (b : ℝ) ^ 5 ≤ n ∧
+      ∀ h' : ℕ, (h' : ℝ) * (b : ℝ) ^ (h' - 1) / (b : ℝ) ^ 5 ≤ n → h' ≤ h := Iff.rfl
+
+--@pin scaleOK_one
+
+--@pin le_of_scaleOK
+
+--@pin exists_isScale
+
+-- "By maximality, `n < b⁻⁵ (h+1) b^h`. With `h+1 ≤ 2h` and `b^h = bM` this gives" (16), "and
+-- with `h+1 ≤ 2^h` and `b⁻⁵ ≤ 1` it gives `n < (2b)^h`, that is," (17); then (18).
+--@pin lt_of_isScale
+
+--@pin scale_succ_le_two_mul
+
+--@pin base_pow_eq_mul_pow
+
+--@pin display_16
+
+--@pin scale_succ_le_two_pow
+
+--@pin inv_pow_five_le_one
+
+--@pin lt_two_mul_pow_of_isScale
+
+--@pin display_17
+
+--@pin display_18
+
+-- The case `M > n`: "(16) gives `b⁻⁵ h < 1`, that is, `h < b⁵`, and (18) gives
+-- `c_A (log₂ n)^{3/2} < b⁻⁸ b^{15/2} < 1`"; the rectangle `[0,1] × [0, min_i V_i]`; "So in this
+-- case the claim of the theorem holds with probability one."
+--@pin scale_div_pow_five_lt_one
+
+--@pin scale_lt_pow_five
+
+--@pin cA_mul_lt_of_lt
+
+--@pin inv_pow_eight_mul_rpow_lt_one
+
+--@pin cA_mul_lt_one
+
+--@pin one_le_supNorm
+
+--@pin ae_one_le_supNorm
+
+--@pin ae_cA_mul_lt_supNorm
+
+-- The case `M ≤ n`: "Also `h ≤ 2^{h-1} ≤ M ≤ n`"; the first term; the second term; their sum;
+-- the threshold chain.
+--@pin scale_le_two_pow
+
+--@pin two_pow_le_base_pow
+
+--@pin scale_le_of_pow_le
+
+--@pin first_term_le
+
+--@pin first_term_le_mul
+
+--@pin exponent_gt
+
+--@pin exponent_ge
+
+--@pin second_term_le_two_pow_mul
+
+--@pin two_pow_mul_exp_eq
+
+--@pin second_term_le
+
+--@pin sum_terms_le
+
+--@pin add_one_le_exp_two_mul
+
+--@pin add_one_mul_exp_le
+
+--@pin failure_le
+
+--@pin threshold_ge_sqrt
+
+--@pin threshold_sqrt_eq
+
+--@pin rpow_div_ge
+
+--@pin threshold_gt
+
+--@pin prob_exists_supNorm_le_of_pow_le
+
+-- Both cases.
+--@pin prob_exists_supNorm_le
+
+/-! ## Appendix A -/
+
+-- The proof of Fact 2.2. "The shift does not hurt."
+--@pin identDistrib_sum_neg
+
+--@pin integral_abs_add_eq_integral_abs_sub
+
+--@pin integral_abs_le_integral_abs_add_of_symm
+
+-- "Two moments." (The Lean proof adds one variable at a time; the manuscript expands `X⁴`
+-- and counts the surviving terms. `6 Σ_{i<j} E X_i² E X_j²` appears as `3m(m-1)σ⁴`.)
+--@pin integral_pow_eq_zero_of_symm
+
+--@pin sum_moments
+
+--@pin sum_fourth_moment_le
+
+-- "From moments to the absolute value."
+--@pin integral_sq_le_rpow_mul_rpow
+
+--@pin mul_sqrt_le_of_moments
+
+-- **Fact A.1.**
+--@pin fact_A_1
+
+--@pin fact_A_1_integrable
+
+-- Its proof: "conditioning on `Γ = γ` amounts to fixing the first argument of `φ`"; the
+-- unconditional bound; one difference; `cosh x ≤ exp(x²/2)`.
+--@pin condExp_comap_eq_integral_of_indepFun
+
+--@pin fact_A_1_freeze
+
+--@pin abs_sub_le_of_bounded_differences
+
+--@pin bounded_differences_pi
+
+--@pin exp_mul_le_chord
+
+--@pin integral_exp_le_cosh
+
+--@pin cosh_le_exp_sq_half
+
+--@pin integral_exp_le_of_centered
+
+--@pin integral_exp_centered_le
+
+-- "One difference" as the manuscript states it, for a σ-field `𝓗` (a restatement: the proof
+-- of `fact_A_1` uses the forms above, for product measures).
+--@pin condExp_exp_le_cosh
+
+--@pin condExp_exp_le_exp_sq
+
+--@archive-routes
+/-! ## Statements about the archive's routes (not used by the results above) -/
+
+-- The archive's theorems, restated with `F_χ` and `‖F_χ‖∞`: the same statements.
+example : type_of% @R56Audit.theorem_1_1_archive = type_of% @R56Audit.theorem_1_1 := rfl
+
+example :
+    type_of% @R56Audit.corollary_1_2_lower_archive = type_of% @R56Audit.corollary_1_2_lower :=
+  rfl
+
+--@pin theorem_1_1_event_archive
+
+--@pin exists_points_anchored_archive
+
+-- Lemma 2.5(ii) and Proposition 2.7 by the archive's estimates: the same statements.
+example {n : ℕ} : type_of% (@R56Audit.lemma_2_5_ii_archive n) = type_of% (@R56Audit.lemma_2_5_ii n) :=
+  rfl
+
+example : type_of% @R56Audit.proposition_2_7_probe = type_of% @R56Audit.proposition_2_7 := rfl
+
+--@pin proposition_2_7_archive
+
+-- The archive's good-transition event is the event `G_j`, on the probability-one event.
+--@def innerRegionIoc
+example (b h j c v : ℕ) :
+    innerRegionIoc b h j c v =
+      Set.Ioc ((c : ℝ) / (b : ℝ) ^ j) (((c : ℝ) + 1) / (b : ℝ) ^ j) ×ˢ
+        Set.Ioc (((v : ℝ) * (b : ℝ) ^ (j + 1) + (b : ℝ) ^ j) / (b : ℝ) ^ h)
+          ((((v : ℝ) + 1) * (b : ℝ) ^ (j + 1) - (b : ℝ) ^ j) / (b : ℝ) ^ h) := rfl
+
+--@pin mem_innerRegion_iff_Ioc
+
+--@pin mem_paperGoodTransition_iff open=Oscillation.Direct
+
+-- The archive's conditional gain, `Oscillation.gridPotential_drift_even`, without `Even b`.
+--@pin gridPotential_drift_all
+
+example {n K V b m : ℕ} (hK : 0 < K) (hV : 0 < V) (hb : 0 < b) (heven : Even b) (hm : 0 < m)
+    (χ : Fin n → ℝ) (hχ : ∀ i, |χ i| = 1) (p Y : Fin n → ℕ) :
+    interiorMass K V b m p Y / (4 * (b : ℝ) * (K * V : ℕ)) ≤
+      finAvg (fun r : Fin n → Fin b =>
+        gridPotential (K * b) V (b * m) (Nat.mul_pos hb hm) χ (refinedPositions p r) Y) -
+      gridPotential K (V * b) m hm χ p Y :=
+  Oscillation.gridPotential_drift_even hK hV hb heven hm χ hχ p Y
+
+/-! ## Axioms of every declaration of the supplement -/
+
+-- As `#print axioms` reports them. (`SupplementAudit.lean` checks the same by walking the
+-- proof terms, and checks the kinds of all constants.)
+open Lean Elab Command in
+run_cmd do
+  let env ← getEnv
+  let mut count := 0
+  let mut mods := 0
+  for h : i in [0:env.header.moduleNames.size] do
+    let m := env.header.moduleNames[i]
+    if (`R56Audit).isPrefixOf m then
+      mods := mods + 1
+      for n in env.header.moduleData[i]!.constNames do
+        let some ci := env.find? n | throwError "constant {n} not found"
+        match ci with
+        | .axiomInfo _ => throwError "axiom in the supplement: {n}"
+        | .opaqueInfo _ => throwError "opaque in the supplement: {n}"
+        | _ => pure ()
+        if ci.isUnsafe || ci.isPartial then throwError "unsafe or partial: {n}"
+        let axioms ← collectAxioms n
+        for ax in axioms do
+          unless ax == `propext || ax == `Classical.choice || ax == `Quot.sound do
+            throwError "unexpected axiom {ax} in {n}"
+        count := count + 1
+  IO.println s!"SUPPLEMENT: {mods} modules, {count} constants, all within propext / Classical.choice / Quot.sound"
+
+#print axioms R56Audit.theorem_1_1
+#print axioms R56Audit.theorem_1_1_unfolded
+#print axioms R56Audit.corollary_1_2_lower
+#print axioms R56Audit.proposition_2_7
+#print axioms R56Audit.vertical_comparison
+#print axioms R56Audit.fact_2_2_general
+#print axioms R56Audit.local_gain
+#print axioms R56Audit.lemma_2_4_digits
+#print axioms R56Audit.lemma_2_5_ii_all
+#print axioms R56Audit.lemma_2_6_digits
+#print axioms R56Audit.fact_A_1
+#print axioms R56Audit.one_rectangle
+
+/-! ## The route of the proof -/
+
+-- Theorem 1.1 and its companions go through the statements listed in `must`: the numbered
+-- statements of the manuscript and steps of their proofs, and the bridge `condExp_digitSigma`
+-- between the two descriptions of `𝓕_j`. They use none of the declarations of the archive's
+-- own proof listed in `mustNot` and nothing from the namespaces `Oscillation.Direct` and
+-- `Oscillation.R65`; and everything they use of the archive lies in the eight modules listed
+-- in `archiveModules` (the law of the points, finite averages, the index of an interval, and
+-- the conditional law of the next digit).
+open Lean Elab Command in
+run_cmd do
+  let env ← getEnv
+  let moduleOf : Name → Option Name := fun n =>
+    (env.getModuleIdxFor? n).map fun idx => env.header.moduleNames[idx.toNat]!
+  let inArchive : Name → Bool := fun n =>
+    match moduleOf n with
+    | some m => (`Oscillation).isPrefixOf m || (`Riesz).isPrefixOf m
+    | none => false
+  let isLocal : Name → Bool := fun n =>
+    match moduleOf n with
+    | some m => (`Oscillation).isPrefixOf m || (`Riesz).isPrefixOf m || (`R56Audit).isPrefixOf m
+    | none => false
+  -- all local constants that occur in the statement or in the proof of `root`, transitively
+  let reach : Name → CommandElabM NameSet := fun root => do
+    let mut todo : Array Name := #[root]
+    let mut seen : NameSet := {}
+    while todo.size > 0 do
+      let n := todo.back!
+      todo := todo.pop
+      if seen.contains n || !isLocal n then continue
+      seen := seen.insert n
+      let some ci := env.find? n | throwError "constant {n} not found"
+      for m in ci.getUsedConstantsAsSet do
+        unless seen.contains m do todo := todo.push m
+    return seen
+  let must : List Name := [`R56Audit.proposition_2_7, `R56Audit.roadmap_digits,
+    `R56Audit.lemma_2_4_digits, `R56Audit.local_gain, `R56Audit.vertical_comparison,
+    `R56Audit.fact_2_2_general, `R56Audit.display_8, `R56Audit.expected_offset_ge_sigma,
+    `R56Audit.lemma_2_5_i, `R56Audit.lemma_2_5_ii, `R56Audit.lemma_2_5_ii_all,
+    `R56Audit.lemma_2_6_digits,
+    `R56Audit.Zstep_update_le, `R56Audit.fact_A_1, `R56Audit.integral_prod_le_of_condExp_le,
+    `R56Audit.measureReal_le_exp_mul_integral_exp_neg, `R56Audit.condExp_digitSigma,
+    `R56Audit.Zpot_le_two_supNorm, `R56Audit.Zpot_nonneg, `R56Audit.fluct_le_of_good,
+    `R56Audit.exponent_eq, `R56Audit.prob_exists_small_le, `R56Audit.display_16,
+    `R56Audit.display_17, `R56Audit.display_18, `R56Audit.ae_cA_mul_lt_supNorm,
+    `R56Audit.failure_le, `R56Audit.threshold_gt]
+  let mustNot : List Name := [`Oscillation.gridPotential, `Oscillation.gridPotential_drift_even,
+    `Oscillation.local_gridMax_gain, `Oscillation.midpoint_range_comparison,
+    `Oscillation.abs_mean_of_fourth_three, `Oscillation.shifted_rademacher_abs,
+    `Oscillation.finAvg_exp_boundedDifferences, `Oscillation.stage_centered_lower_tail,
+    `Oscillation.integral_prefixProduct_le_of_cond, `Oscillation.small_event_of_laplace,
+    `Oscillation.paper_lower_bound, `Oscillation.planar_tusnady_lower_bound,
+    `Oscillation.Direct.proposition_2_7, `Oscillation.Direct.union_simultaneous_bound,
+    `Oscillation.Direct.allGood_compl_bound, `Oscillation.Direct.paper_bad_transition_bound,
+    `Oscillation.Direct.paperGoodTransition, `Oscillation.Direct.point_exp_loss,
+    `Oscillation.Direct.loss_tail, `Oscillation.R65.simultaneous_bound,
+    `Oscillation.R65.all_good_compl_bound, `Oscillation.R65.bad_transition_bound,
+    `Riesz.PointSets.badSet, `Riesz.PointSets.GoodEvent, `Riesz.PaperLowerBound,
+    `R56Audit.gridPotential_drift_all, `R56Audit.union_simultaneous_bound_all,
+    `R56Audit.proposition_2_7_probe, `R56Audit.proposition_2_7_archive,
+    `R56Audit.theorem_1_1_archive, `R56Audit.theorem_1_1_event_archive,
+    `R56Audit.lemma_2_5_ii_archive, `R56Audit.lemma_2_5_ii_all_archive]
+  let archiveModules : List Name := [`Oscillation.CoordinateProduct, `Oscillation.FiniteAverage,
+    `Riesz.CellAverages, `Riesz.ConditionalGridProduct, `Riesz.GridRefinement, `Riesz.Occupancy,
+    `Riesz.PointSets, `Riesz.UniformGrid]
+  for n in must ++ mustNot do
+    unless env.contains n do throwError "unknown constant {n}"
+  for root in [`R56Audit.theorem_1_1, `R56Audit.theorem_1_1_unfolded,
+      `R56Audit.theorem_1_1_constant, `R56Audit.theorem_1_1_constant_event,
+      `R56Audit.exists_points, `R56Audit.corollary_1_2_lower] do
+    let used ← reach root
+    for n in must do
+      unless used.contains n do throwError "{root} does not use {n}"
+    for n in mustNot do
+      if used.contains n then throwError "{root} uses {n}"
+    let mut archive : NameSet := {}
+    for n in used.toList do
+      if (`Oscillation.Direct).isPrefixOf n || (`Oscillation.R65).isPrefixOf n then
+        throwError "{root} uses {n}"
+      if inArchive n then
+        let some m := moduleOf n | continue
+        unless archiveModules.contains m do throwError "{root} uses {n} of the module {m}"
+        archive := archive.insert m
+    unless archive.size == archiveModules.length do
+      throwError "{root} uses only the archive modules {archive.toList}"
+    IO.println s!"ROUTE {root}: {used.size} local constants; uses the {must.length} listed statements, none of the {mustNot.length} excluded declarations, and of the archive only the {archiveModules.length} listed modules"
+  -- which of the statement gates above are on the route of Theorem 1.1 and Corollary 1.2
+  --@pinlist
+  let used := (← reach `R56Audit.theorem_1_1) ++ (← reach `R56Audit.corollary_1_2_lower)
+  let off := pinned.filter fun n => !used.contains n
+  IO.println s!"PINNED {pinned.length} statements: {pinned.length - off.length} are used by Theorem 1.1 or Corollary 1.2; the other {off.length} are not: {off.map fun n => n.replacePrefix `R56Audit .anonymous}"
+  -- the statements that use Mathlib only
+  for root in [`R56Audit.vertical_comparison, `R56Audit.fact_2_2_general, `R56Audit.lemma_2_5_i,
+      `R56Audit.fact_A_1, `R56Audit.integral_prod_le_of_condExp_le,
+      `R56Audit.measureReal_le_exp_mul_integral_exp_neg] do
+    let used ← reach root
+    for n in used.toList do
+      if inArchive n then throwError "{root} uses the archive: {n}"
+    IO.println s!"MATHLIB ONLY {root}: {used.size} supplement constants, no archive constant"
+
+/-! ## The reading list -/
+
+-- Every definition that one has to read in order to understand a statement gate above has a
+-- definition gate above. Here "has to read" means: the definitions of the supplement and of
+-- the archive that occur in the statement, and recursively in the types and in the bodies of
+-- those definitions. (`freshGridIndex` is read through the equation proved above and not
+-- through its body: the walk continues with the statement of the archive's theorem
+-- `freshGridIndex_eq_emod`, which mentions the same definitions.) The statements of the last
+-- section, about the archive's own routes, are not included: they speak about the archive's
+-- definitions. The statement of `theorem_1_1_unfolded` contains no definition of the
+-- supplement or of the archive at all.
+open Lean Elab Command in
+run_cmd do
+  let env ← getEnv
+  let isLocal : Name → Bool := fun n =>
+    match (env.getModuleIdxFor? n).map fun idx => env.header.moduleNames[idx.toNat]! with
+    | some m => (`Oscillation).isPrefixOf m || (`Riesz).isPrefixOf m || (`R56Audit).isPrefixOf m
+    | none => false
+  --@deflist
+  --@readlist
+  let characterized : List (Name × Name) :=
+    [(`Riesz.freshGridIndex, `Riesz.freshGridIndex_eq_emod)]
+  -- constants generated for the inductive type `Side`
+  let generated : List Name := [`R56Audit.instDecidableEqSide, `R56Audit.Side.rec,
+    `R56Audit.Side.casesOn, `R56Audit.Side.ctorIdx]
+  for n in gated ++ toRead ++ characterized.map (·.2) do
+    unless env.contains n do throwError "unknown constant {n}"
+  let some unfolded := env.find? `R56Audit.theorem_1_1_unfolded
+    | throwError "theorem_1_1_unfolded not found"
+  let locals := unfolded.type.getUsedConstantsAsSet.toList.filter isLocal
+  unless locals.isEmpty do throwError "theorem_1_1_unfolded mentions {locals}"
+  let mut todo : Array Name := #[]
+  for t in toRead do
+    let some ci := env.find? t | throwError "unknown statement {t}"
+    todo := todo ++ ci.type.getUsedConstantsAsSet.toArray
+  let mut seen : NameSet := {}
+  let mut read : Array Name := #[]
+  while todo.size > 0 do
+    let c := todo.back!
+    todo := todo.pop
+    if seen.contains c || !isLocal c then continue
+    seen := seen.insert c
+    let some ci := env.find? c | throwError "constant {c} not found"
+    match characterized.lookup c, ci with
+    | _, .thmInfo _ => continue                 -- a proof inside a statement
+    | some thm, _ =>
+      let some ti := env.find? thm | throwError "constant {thm} not found"
+      todo := todo ++ ti.type.getUsedConstantsAsSet.toArray
+    | none, .defnInfo v =>
+      todo := todo ++ v.type.getUsedConstantsAsSet.toArray ++ v.value.getUsedConstantsAsSet.toArray
+    | none, _ => todo := todo ++ ci.type.getUsedConstantsAsSet.toArray
+    -- auxiliary constants (proofs inside definitions, matchers) need no reading
+    if c.isInternal || (← findDeclarationRanges? c).isNone || generated.contains c then continue
+    unless gated.contains c do
+      throwError "{c} occurs in a statement gate and has no definition gate"
+    read := read.push c
+  let unused := gated.filter fun n => !read.contains n
+  IO.println s!"READING LIST the statement of theorem_1_1_unfolded contains no constant of the supplement or of the archive; the {toRead.length} statement gates outside the section on the archive's routes involve {read.size} definitions of the supplement and of the archive, each with a definition gate ({gated.length} names have one; not needed for these statements: {unused.map fun n => n.replacePrefix `R56Audit .anonymous})"

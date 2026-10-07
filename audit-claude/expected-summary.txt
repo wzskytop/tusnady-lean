@@ -1,0 +1,63 @@
+== supplement: 33 files, 10308 lines
+SCAN PASSED
+266 statement gates written
+GATES 353 examples (comments removed): 266 statement gates, 80 definition gates for 83 names, 7 other examples
+STRICT 33 modules, no error, no warning
+OLEAN CHECK: 33 modules, 907 constants; entries only in 37 of the 37 allowed extensions (instances: 2, simp lemmas: 3, reducibility attributes: 17)
+KINDS 33 modules, 907 constants: [constructor 3, definition 101, inductive 1, recursor 1, theorem 801]; written in the sources: 521 theorems, 84 definitions, and the inductive type Side
+AXIOMS reached from the 907 constants, through 51195 constants in all: #[propext, Classical.choice, Quot.sound]
+ATTRIBUTES instances 2, simp lemmas 3, reducible 13, instance-reducible 4: as expected (the inductive type Side, four abbrevs, two matchers)
+NAMES non-ASCII characters in declared names: [₂, Δ]
+NAMESPACES 903 constants in the namespace R56Audit, and 4 equation or congruence lemmas that Lean generated for definitions of other modules: #[Equiv.piEquivPiSubtypeProd.eq_1, Oscillation.interiorIndices.eq_1, Riesz.sampleFreshIndex.congr_simp, Riesz.PointSets.fixedColorBad.eq_1]; 8 names are also names of declarations or aliases in the root namespace or in a namespace opened by the check scripts, the expected ones: #[maxOn, minOn, Oscillation.integral_exp_centered_le, Oscillation.stageFiltration, Oscillation.stageFiltration_apply, Oscillation.Direct.proposition_2_7, Oscillation.Direct.threshold_eq, Oscillation.stageFiltration._proof_1]
+MODULES archive=58 supplement=33
+ROOT R56Audit.theorem_1_1: supplement modules 24, archive modules 8
+ROOT R56Audit.corollary_1_2_lower: supplement modules 25, archive modules 8
+ROOT R56Audit.theorem_1_1_unfolded: supplement modules 24, archive modules 8
+ROOT R56Audit.proposition_2_7: supplement modules 22, archive modules 8
+ROOT R56Audit.lemma_2_4_digits: supplement modules 16, archive modules 8
+ROOT R56Audit.lemma_2_4: supplement modules 14, archive modules 8
+ROOT R56Audit.lemma_2_5_i: supplement modules 1, archive modules 0
+ROOT R56Audit.lemma_2_5_ii: supplement modules 3, archive modules 2
+ROOT R56Audit.lemma_2_5_ii_all: supplement modules 3, archive modules 2
+ROOT R56Audit.lemma_2_6_digits: supplement modules 16, archive modules 8
+ROOT R56Audit.lemma_2_6: supplement modules 13, archive modules 8
+ROOT R56Audit.local_gain: supplement modules 5, archive modules 1
+ROOT R56Audit.vertical_comparison: supplement modules 1, archive modules 0
+ROOT R56Audit.fact_2_2_general: supplement modules 1, archive modules 0
+ROOT R56Audit.fact_A_1: supplement modules 1, archive modules 0
+ROOT R56Audit.integral_prod_le_of_condExp_le: supplement modules 1, archive modules 0
+ROOT R56Audit.one_rectangle: supplement modules 17, archive modules 8
+ROOT R56Audit.condExp_digitSigma: supplement modules 6, archive modules 6
+ROOT R56Audit.condExp_nextDigits: supplement modules 6, archive modules 8
+ROOT R56Audit.theorem_1_1_archive: supplement modules 3, archive modules 48
+ROOT R56Audit.proposition_2_7_probe: supplement modules 10, archive modules 34
+SUPPLEMENT: 33 modules, 907 constants, all within propext / Classical.choice / Quot.sound
+'R56Audit.theorem_1_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.theorem_1_1_unfolded' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.corollary_1_2_lower' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.proposition_2_7' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.vertical_comparison' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.fact_2_2_general' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.local_gain' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.lemma_2_4_digits' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.lemma_2_5_ii_all' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.lemma_2_6_digits' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.fact_A_1' depends on axioms: [propext, Classical.choice, Quot.sound]
+'R56Audit.one_rectangle' depends on axioms: [propext, Classical.choice, Quot.sound]
+ROUTE R56Audit.theorem_1_1: 698 local constants; uses the 28 listed statements, none of the 33 excluded declarations, and of the archive only the 8 listed modules
+ROUTE R56Audit.theorem_1_1_unfolded: 700 local constants; uses the 28 listed statements, none of the 33 excluded declarations, and of the archive only the 8 listed modules
+ROUTE R56Audit.theorem_1_1_constant: 695 local constants; uses the 28 listed statements, none of the 33 excluded declarations, and of the archive only the 8 listed modules
+ROUTE R56Audit.theorem_1_1_constant_event: 694 local constants; uses the 28 listed statements, none of the 33 excluded declarations, and of the archive only the 8 listed modules
+ROUTE R56Audit.exists_points: 695 local constants; uses the 28 listed statements, none of the 33 excluded declarations, and of the archive only the 8 listed modules
+ROUTE R56Audit.corollary_1_2_lower: 716 local constants; uses the 28 listed statements, none of the 33 excluded declarations, and of the archive only the 8 listed modules
+PINNED 266 statements: 205 are used by Theorem 1.1 or Corollary 1.2; the other 61 are not: [Zpot_aestronglyMeasurable, Zpot_aestronglyMeasurable_digits, ae_setupEvent, block_disjoint, bottomStrip_eq_cell, card_cells_stage, childAvg_eq_F, compRect_eq_iUnion_new, compRect_eq_iUnion_old, condExp_exp_le_cosh, condExp_exp_le_exp_sq, condExp_nextDigits, display_5, display_6, exists_childIndex, exists_eq_supNorm, exists_points_anchored_archive, exists_symm_perm_iff, expected_offset_core, fact_A_1_integrable, fluctTerm_ae_eq, gridPotential_drift_all, hcell_eq_iUnion_children, iUnion_block, iUnion_cell, iUnion_hcell, iUnion_inner_blocks, iUnion_vcell, inUnit_of_noGrid, innerRegion_eq_diff, innerRegion_eq_iUnion, inner_blocks_nonempty, lemma_2_6_step2, local_gain_core, local_gain_sets, maxOn_mem, measurableSet_exists_supNorm_le, measurableSet_fluctDigits_le, measurableSet_fluct_le, measurableSet_forall_le_supNorm, measurableSet_goodTransition, measurable_Zpot, measurable_nextDigits, mem_innerPoints_iff, mem_innerRegion_iff_Ioc, mem_paperGoodTransition_iff, minOn_mem, nextDigits_ae_eq_freshInfo, offset_eq, one_rectangle, proposition_2_7_archive, theorem_1_1_event_archive, theorem_1_1_unfolded, topStrip_eq_cell, vcell_disjoint, vcell_succ_eq_iUnion, volume_boundaryStrips, volume_cell, volume_compRect, volume_innerRegions_le, withoutJumps_eq]
+MATHLIB ONLY R56Audit.vertical_comparison: 25 supplement constants, no archive constant
+MATHLIB ONLY R56Audit.fact_2_2_general: 14 supplement constants, no archive constant
+MATHLIB ONLY R56Audit.lemma_2_5_i: 12 supplement constants, no archive constant
+MATHLIB ONLY R56Audit.fact_A_1: 17 supplement constants, no archive constant
+MATHLIB ONLY R56Audit.integral_prod_le_of_condExp_le: 4 supplement constants, no archive constant
+MATHLIB ONLY R56Audit.measureReal_le_exp_mul_integral_exp_neg: 1 supplement constants, no archive constant
+READING LIST the statement of theorem_1_1_unfolded contains no constant of the supplement or of the archive; the 260 statement gates outside the section on the archive's routes involve 82 definitions of the supplement and of the archive, each with a definition gate (83 names have one; not needed for these statements: [innerRegionIoc])
+GATES all examples accepted
+MUTANTS: 52 of 52 changed gates rejected (40 statements, 12 definitions); 3 controls accepted
+REPLAY 32 modules

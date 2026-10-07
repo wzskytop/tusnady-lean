@@ -1,0 +1,22 @@
+{
+  "input_zip": "tusnady-r65-lean-audit-claude.zip",
+  "input_zip_sha256": "657632fe31dfc57e29096262238f0e22680467a9cc2407c67089ce70b64d230d",
+  "supplement_source_files": 33,
+  "supplement_sources_unchanged": false,
+  "integration": "r65; original mathematical namespace R56Audit retained; audit references to Oscillation.R56 updated to Oscillation.R65; historical archive hashes replaced by supplement source hashes and current verification source manifest",
+  "unchanged_files": 31,
+  "adaptations": [
+    {
+      "file": "R56Audit/ArchiveRoute.lean",
+      "change": "Replace Oscillation.R56 with Oscillation.R65 in the legacy-comparison call and its comment; theorem types and proof steps unchanged.",
+      "original_sha256": "58f01eb1c3913a8fa0ba34ec7040c1fa17866d93b6a7379d11e3b816928203f4",
+      "integrated_sha256": "cb3afebfdb162fdeebd03248c6b7fe496359bd4d5b80a67b6e1755085ee1bef0"
+    },
+    {
+      "file": "R56Audit/GoodTransitionsArchive.lean",
+      "change": "Replace two legacy occupancy references R56 with R65; statements and proof steps unchanged.",
+      "original_sha256": "c8af63018eb87e8b468bb302ccf62fc283513375b6019bc53c84b4c9e11e284f",
+      "integrated_sha256": "49ae729bfb26196735ce0dc7f02e51008bb887d410d77b857f02debdd29c0773"
+    }
+  ]
+}
