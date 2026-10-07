@@ -4,7 +4,7 @@
 
 This submission snapshot binds the **r65 manuscript** to a Lean 4 proof of its **main lower-bound theorem**, following the manuscript's continuous oscillation, symmetric-jump, and digit-filtration route. It does not claim line-by-line verification of the entire paper.
 
-- [Paper PDF](verification/tusnady-plane-stoc27-vC-r65.pdf) and [LaTeX source](verification/tusnady-plane-stoc27-vC-r65.tex)
+- [Paper Link](https://arxiv.org/abs/2610.08130)
 - [Main theorem](R56Audit/Parameters.lean), [deterministic lower bound](R56Audit/Parameters.lean), and [independent explicit statement checks](scripts/SubmissionStatements.lean)
 - [Paper-to-code correspondence](PROOF_MAP.md), [scope audit](AUDIT_R65.md), and [supplement provenance](audit-claude/PROVENANCE.json)
 - [Manuscript SHA256 hashes](verification/manuscript-r65.json)
