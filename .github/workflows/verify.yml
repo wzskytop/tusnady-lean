@@ -27,7 +27,7 @@ jobs:
       - name: Verify source, manuscript hashes, axioms, dependencies, and kernel
         run: python3 scripts/verify.py --replay
       - name: Produce checked submission snapshot
-        run: python3 scripts/package.py ../tusnady-r65-lean-verified.zip
+        run: python3 scripts/package.py "$RUNNER_TEMP/tusnady-r65-lean-verified.zip"
       - name: Preserve verification evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
@@ -43,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tusnady-r65-verified-${{ github.sha }}
-          path: ../tusnady-r65-lean-verified.zip
+          path: ${{ runner.temp }}/tusnady-r65-lean-verified.zip
           if-no-files-found: error
